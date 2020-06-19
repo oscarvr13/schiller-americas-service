@@ -1,0 +1,25 @@
+path:
+  request:
+    get:
+        persons: /v1/persons
+        person: /v1/persons/{personId}
+    post:
+        person: /v1/persons
+    put:
+        person: /v1/persons/{personId}
+    delete:
+        person: /v1/persons/{personId}
+  person:
+    controller: /shilleramericas/api      
+spring:
+  datasource:
+   url: jdbc:h2:mem:testdb
+  h2:
+   console:
+      enabled: true
+  jpa:
+   properties:
+    hibernate:
+     dialect : org.hibernate.dialect.H2Dialect
+  application:
+    name: person-micro
