@@ -1,2 +1,17 @@
 server:
-  port: 8082
+  port: 8081
+path:
+  request:
+    get:
+        persons: /v1/persons
+        person: /v1/persons/{personId}
+    post:
+        person: /v1/persons
+    put:
+        person: /v1/persons/{personId}
+    delete:
+        person: /v1/persons/{personId}
+  person:
+    controller: /shilleramericas/api      
+                
+  
