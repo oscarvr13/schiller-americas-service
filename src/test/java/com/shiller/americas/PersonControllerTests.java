@@ -16,9 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import com.shiller.americas.dto.PersonDto;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PersonControllerIT {
+@RunWith(SpringRunner.class)
+public class PersonControllerTests {
 
   @Autowired
   private TestRestTemplate restTemplate;

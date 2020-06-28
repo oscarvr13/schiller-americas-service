@@ -13,7 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>person-microservice</name>
 	<description>Examen Back End Shiller Americas</description>
-
+	<packaging>jar</packaging>
 	<properties>
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Hoxton.SR4</spring-cloud.version>
@@ -53,6 +53,10 @@
 					<groupId>org.junit.vintage</groupId>
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -69,6 +73,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
+			<scope>test</scope>
 		</dependency>
 			<dependency>
 			<groupId>com.google.guava</groupId>
@@ -113,6 +118,42 @@
 	</dependencyManagement>
 	<build>
 		<plugins>
+			<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId> <!-- surefire plugin version managed by Spring Boot -->
+			<configuration>
+				<skipTests>true</skipTests>
+			</configuration>
+			<executions>
+				<execution>
+					<id>unit-tests</id>
+					<phase>test</phase>
+					<goals>
+						<goal>test</goal>
+					</goals>
+					<configuration>
+						<skipTests>false</skipTests>
+						<includes>
+							<include>**/*Test.java</include>
+						</includes>
+					</configuration>
+				</execution>
+				<execution>
+					<id>integration-tests</id>
+					<phase>integration-test</phase>
+					<goals>
+						<goal>test</goal>
+					</goals>
+					<configuration>
+						<skipTests>false</skipTests>
+						<includes>
+							<include>**/*Tests.java</include>
+							<include>**/*IT.java</include>
+						</includes>
+					</configuration>
+				</execution>
+			</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
