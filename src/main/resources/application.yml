@@ -1,17 +1,76 @@
 server:
-  port: 8081
+  port: 8085
 path:
   request:
     get:
         persons: /v1/persons
         person: /v1/persons/{personId}
+        courses: /v1/courses
     post:
         person: /v1/persons
     put:
         person: /v1/persons/{personId}
     delete:
         person: /v1/persons/{personId}
+    mapping:
+      lms:
+        controller: /v1/lms/courses
+      request:
+        courses:
   person:
-    controller: /shilleramericas/api      
-                
-  
+    controller: /shilleramericas/api
+
+spring:
+  application:
+    name: person-micro
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydb?serverTimezone=UTC
+    username: root
+    password: 1t2e4stP!
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+feign:
+  client:
+    config:
+      course-micro:
+        connectTimeout: 19000
+        readTimeout: 35000
+        loggerLevel: full
+  hystrix:
+    enabled: false
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+        enabled: true
+        requestVolumeThreshold: 20
+        errorThresholdPercentage: 50
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 10000
+    getAllCoursesCommand:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 80000
+ribbon:
+  eureka:
+    enabled: false
+course-micro:
+  ribbon:
+    MaxAutoRetries: 2
+    MaxAutoRetriesNextServer: 1
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream, health, info
+
+logging.level.com.shiller.americas.controller.client.CourseClient: DEBUG
+
+

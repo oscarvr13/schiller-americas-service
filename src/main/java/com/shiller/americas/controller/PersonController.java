@@ -2,6 +2,8 @@ package com.shiller.americas.controller;
 
 import java.net.URI;
 import java.util.List;
+
+import com.shiller.americas.dto.CourseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -9,6 +11,8 @@ import com.shiller.americas.controller.api.PersonApi;
 import com.shiller.americas.dto.PersonDto;
 import com.shiller.americas.service.PersonService;
 import lombok.RequiredArgsConstructor;
+
+import javax.validation.Valid;
 
 //@RequiredArgsConstructor
 @RestController
@@ -75,5 +79,11 @@ public class PersonController implements PersonApi {
     System.out.println("Entra al delete Person");
     boolean isDeleted = personService.deletePerson(personId); 
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<List<CourseDto>> getCourses() {
+    System.out.println("Get all courses");
+    return personService.getAllCourses();
   }
 }

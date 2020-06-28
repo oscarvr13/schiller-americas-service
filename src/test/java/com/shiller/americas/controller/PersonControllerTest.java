@@ -19,10 +19,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiller.americas.dto.PersonDto;
 import com.shiller.americas.service.PersonService;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = PersonController.class)
@@ -42,15 +42,22 @@ public class PersonControllerTest {
   
   @Value("${path.request.get.person}")
   private String getUri;
-  
-  
-  
+
+  @Value("${path.request.post.person}")
+  private String postUri;
+
+  @Value("${path.request.put.person}")
+  private String putUri;
+
+  @Value("${path.request.delete.person}")
+  private String deleteUri;
+
   @Test
   public void testGetPersons() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     //mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     PersonDto[] personDtos = {
-        new PersonDto("Oscar", 32, "M"), new PersonDto("Jorge", 33, "M")
+        new PersonDto("Oscar", 32), new PersonDto("Jorge", 33)
         };
     String uri = generalUri + getAllUri;
     String expectedJson = mapper.writeValueAsString(personDtos);
@@ -78,7 +85,9 @@ public class PersonControllerTest {
     ObjectMapper mapper = new ObjectMapper();
     //mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     PersonDto personDtoExpected = new PersonDto("Oscar", 32, "M");
-    String uri = "/shilleramericas/api/v1/persons/1";
+    String personId = "1";
+    String uri = generalUri + getUri;
+    uri = uri.replace("{personId}", personId);
     String expectedJson = mapper.writeValueAsString(personDtoExpected);
     System.out.println("ExpectedJson: "+expectedJson);
     when(personService.getPerson(1)).thenReturn(personDtoExpected);
@@ -90,22 +99,23 @@ public class PersonControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andReturn();
     String result = response.getResponse().getContentAsString();
-    PersonDto personDto =  mapper.readValue(result, PersonDto.class);
-    assertThat(personDto).extracting("name", "age")
-        .containsExactly(personDtoExpected.getName(), personDtoExpected.getAge());
-    assertThat(personDto).extracting("code", "createDate")
-    .isNotEmpty().isNotNull();
+    PersonDto personDtoReceived =  mapper.readValue(result, PersonDto.class);
+    assertThat(personDtoReceived).extracting("name", "age","gender")
+        .containsExactly(personDtoExpected.getName(), personDtoExpected.getAge(), personDtoExpected.getGender());
+    assertThat(personDtoReceived).extracting("code", "createDate")
+    .isNotEmpty().isNotNull()
+        .containsExactly(personDtoExpected.getCode(),  personDtoExpected.getCreateDate());
   }
   
   @Test
-  public void testCreatePerson() throws Exception {
+  public void testCreatePersonWithAllAttributes() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
-    PersonDto personToCreate = new PersonDto("Oscar", 32, "M");
-    String uri = "/shilleramericas/api/v1/persons";
-    String expectedJson = mapper.writeValueAsString(personToCreate);
+    PersonDto personDtoToCreate = new PersonDto("Oscar", 32, "M");
+    String uri = generalUri + postUri;
+    String expectedJson = mapper.writeValueAsString(personDtoToCreate);
     System.out.println("ExpectedJson: "+expectedJson);
-    when(personService.createPerson(any(PersonDto.class)))
-        .thenReturn(personToCreate);
+    when(personService.createPerson(personDtoToCreate))
+        .thenReturn(personDtoToCreate);
     RequestBuilder request =
         MockMvcRequestBuilders.post(uri)
         .accept(MediaType.APPLICATION_JSON)
@@ -117,22 +127,80 @@ public class PersonControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andReturn();
     String result = response.getResponse().getContentAsString();
-    PersonDto personDto =  mapper.readValue(result, PersonDto.class);
-    assertThat(personDto).extracting("name", "age")
-        .containsExactly(personToCreate.getName(), personToCreate.getAge());
-    assertThat(personDto).extracting("code", "createDate")
-    .isNotEmpty().isNotNull();
+    String headerLocation = response.getResponse().getHeader("Location").toString();
+    PersonDto personDtoCreated =  mapper.readValue(result, PersonDto.class);
+    assertThat(personDtoCreated).extracting("name", "age", "gender")
+        .containsExactly(personDtoToCreate.getName(), personDtoToCreate.getAge(),
+            personDtoToCreate.getGender());
+    assertThat(personDtoCreated).extracting("code", "createDate")
+    .isNotEmpty().isNotNull()
+        .containsExactly(personDtoToCreate.getCode(), personDtoToCreate.getCreateDate());
+    assertThat(headerLocation).contains(generalUri+getAllUri);
+  }
+
+  @Test
+  public void testCreatePersonWithNoEnoughAttributes() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    PersonDto personDtoToCreate = new PersonDto("Oscar", null);
+    String uri = generalUri + postUri;
+    String expectedJson = mapper.writeValueAsString(personDtoToCreate);
+    System.out.println("ExpectedJson: "+expectedJson);
+    when(personService.createPerson(personDtoToCreate))
+        .thenReturn(personDtoToCreate);
+    RequestBuilder request =
+        MockMvcRequestBuilders.post(uri)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(expectedJson);
+    MvcResult response =
+        mockMvc.perform(request)
+            .andExpect(status().isBadRequest())
+            .andReturn();
+    Exception exception = response.getResolvedException();
+    System.out.println("Response: "+exception.toString());
+  }
+
+  @Test
+  public void testCreatePersonWithMinimumAttributes() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    PersonDto personDtoToCreate = new PersonDto("Oscar", 32);
+    String uri = generalUri + postUri;
+    String expectedJson = mapper.writeValueAsString(personDtoToCreate);
+    System.out.println("ExpectedJson: "+expectedJson);
+    when(personService.createPerson(personDtoToCreate))
+        .thenReturn(personDtoToCreate);
+    RequestBuilder request =
+        MockMvcRequestBuilders.post(uri)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(expectedJson);
+    MvcResult response =
+        mockMvc.perform(request)
+            .andExpect(status().isCreated())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+    String result = response.getResponse().getContentAsString();
+    String headerLocation = response.getResponse().getHeader("Location").toString();
+    PersonDto personDtoCreated =  mapper.readValue(result, PersonDto.class);
+    assertThat(personDtoCreated).extracting("name", "age", "gender")
+        .containsExactly(personDtoToCreate.getName(), personDtoToCreate.getAge(), "");
+    assertThat(personDtoCreated).extracting("code", "createDate")
+        .isNotEmpty().isNotNull()
+        .containsExactly(personDtoToCreate.getCode(), personDtoToCreate.getCreateDate());
+    assertThat(headerLocation).contains(generalUri+getAllUri);
   }
   
   @Test
   public void testUpdatePerson() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
-    PersonDto personToUpdate = new PersonDto("Oscar", 32, "M");
-    String uri = "/shilleramericas/api/v1/persons/1";
-    String expectedJson = mapper.writeValueAsString(personToUpdate);
+    PersonDto personDtoToUpdate = new PersonDto("Oscar", 32,"M");
+    String personId = "1";
+    String uri = generalUri + putUri;
+    uri = uri.replace("{personId}", personId);
+    String expectedJson = mapper.writeValueAsString(personDtoToUpdate);
     System.out.println("ExpectedJson: "+expectedJson);
-    when(personService.updatePerson(anyInt(), (any(PersonDto.class))))
-        .thenReturn(personToUpdate);
+    when(personService.updatePerson(Integer.valueOf(personId), personDtoToUpdate))
+        .thenReturn(personDtoToUpdate);
     RequestBuilder request =
         MockMvcRequestBuilders.put(uri)
         .accept(MediaType.APPLICATION_JSON)
@@ -144,18 +212,52 @@ public class PersonControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andReturn();
     String result = response.getResponse().getContentAsString();
-    PersonDto personDto =  mapper.readValue(result, PersonDto.class);
-    assertThat(personDto).extracting("name", "age")
-        .containsExactly(personToUpdate.getName(), personToUpdate.getAge());
-    assertThat(personDto).extracting("code", "createDate")
-    .isNotEmpty().isNotNull();
+    PersonDto personDtoUpdated =  mapper.readValue(result, PersonDto.class);
+    assertThat(personDtoUpdated).extracting("name", "age", "gender")
+        .containsExactly(personDtoToUpdate.getName(), personDtoToUpdate.getAge(),
+            personDtoToUpdate.getGender());
+    assertThat(personDtoUpdated).extracting("code", "createDate")
+        .isNotEmpty().isNotNull()
+        .containsExactly(personDtoToUpdate.getCode(), personDtoToUpdate.getCreateDate());
+  }
+
+  @Test
+  public void testUpdatePersonWithMinimumAttributes() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    PersonDto personDtoToUpdate = new PersonDto("Oscar", 32);
+    String personId = "1";
+    String uri = generalUri + putUri;
+    uri = uri.replace("{personId}", personId);
+    String expectedJson = mapper.writeValueAsString(personDtoToUpdate);
+    System.out.println("ExpectedJson: "+expectedJson);
+    when(personService.updatePerson(Integer.valueOf(personId), personDtoToUpdate))
+        .thenReturn(personDtoToUpdate);
+    RequestBuilder request =
+        MockMvcRequestBuilders.put(uri)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(expectedJson);
+    MvcResult response =
+        mockMvc.perform(request)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+    String result = response.getResponse().getContentAsString();
+    PersonDto personDtoUpdated =  mapper.readValue(result, PersonDto.class);
+    assertThat(personDtoUpdated).extracting("name", "age", "gender")
+        .containsExactly(personDtoToUpdate.getName(), personDtoToUpdate.getAge(), "");
+    assertThat(personDtoUpdated).extracting("code", "createDate")
+        .isNotEmpty().isNotNull()
+        .containsExactly(personDtoToUpdate.getCode(), personDtoToUpdate.getCreateDate());
   }
   
   @Test
   public void testDeletePerson() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
-    String uri = "/shilleramericas/api/v1/persons/1";
-    when(personService.deletePerson(1)).thenReturn(true);
+    String personId = "1";
+    String uri = generalUri + deleteUri;
+    uri = uri.replace("{personId}", personId);
+    when(personService.deletePerson(Integer.valueOf(personId))).thenReturn(true);
     RequestBuilder request =
         MockMvcRequestBuilders.delete(uri);
     MvcResult response =

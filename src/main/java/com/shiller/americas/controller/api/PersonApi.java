@@ -1,6 +1,8 @@
 package com.shiller.americas.controller.api;
 
 import java.util.List;
+
+import com.shiller.americas.dto.CourseDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import javax.validation.Valid;
 
 @RequestMapping(value = "${path.person.controller}")
 public interface PersonApi {
@@ -72,7 +76,7 @@ public interface PersonApi {
   @PostMapping(value = "${path.request.post.person}",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  ResponseEntity<PersonDto> createPerson(@RequestBody PersonDto personToUpdate);
+  ResponseEntity<PersonDto> createPerson(@RequestBody @Valid PersonDto personToUpdate);
   
   
   @ApiOperation(value = "To update a person",
@@ -97,7 +101,7 @@ public interface PersonApi {
   ResponseEntity<PersonDto> updatePerson(
       @ApiParam(value = "person id", required = true, example = "123")
       @PathVariable ("personId") int personId,
-      @RequestBody PersonDto personToUpdate);
+      @RequestBody @Valid PersonDto personToUpdate);
   
   @ApiOperation(value = "To delete a person",
       notes = "This endpoint delete the person with the specified id",
@@ -110,6 +114,10 @@ public interface PersonApi {
   ResponseEntity<PersonDto> deletePerson(
       @ApiParam(value = "person id", required = true, example = "123")
       @PathVariable ("personId") int personId);
+
+  @GetMapping(value = "${path.request.get.courses}",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  ResponseEntity<List<CourseDto>> getCourses();
 }
 
 
