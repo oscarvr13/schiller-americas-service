@@ -39,13 +39,13 @@ public class PersonControllerIT {
         .getForEntity(URI.create("/shilleramericas/api/v1/persons/1"), PersonDto.class);
     PersonDto person = response.getBody();
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(person).extracting("personId", "name", "age", "gender", "code").containsExactly(1,
-        "Juan", 24, "M", "abcdefghij");
+    assertThat(person).extracting("personId", "name", "age", "gender").containsExactly(1,
+        "Juan", 24, "M");
   }
 
   @Test
   public void testCreatePerson() {
-    PersonDto personToCreate = new PersonDto("Mario", 32, "M");
+    PersonDto personToCreate = new PersonDto("Mario", 32);
     ResponseEntity<PersonDto> response = this.restTemplate.postForEntity(
         URI.create("/shilleramericas/api/v1/persons"), personToCreate, PersonDto.class);
     PersonDto personDtoInserted = response.getBody();
@@ -74,7 +74,7 @@ public class PersonControllerIT {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(personDto).extracting("personId").isEqualTo(1);
 
-    PersonDto personToUpdate = new PersonDto("Mario", 24, "M");
+    PersonDto personToUpdate = new PersonDto("Mario", 24);
     HttpEntity<PersonDto> request = new HttpEntity<>(personToUpdate);
     response = restTemplate.exchange(URI.create("/shilleramericas/api/v1/persons/1"),
         HttpMethod.PUT, request, PersonDto.class);
@@ -88,7 +88,7 @@ public class PersonControllerIT {
 
   @Test
   public void testDeletePerson() {
-    HttpEntity<PersonDto> request = new HttpEntity<>(new PersonDto());
+    HttpEntity<PersonDto> request = new HttpEntity<>(new PersonDto("Juan",27));
     ResponseEntity<PersonDto> response = restTemplate.exchange(URI.create("/shilleramericas/api/v1/persons/3"),
         HttpMethod.DELETE, request, PersonDto.class);
     PersonDto activityDto = response.getBody();

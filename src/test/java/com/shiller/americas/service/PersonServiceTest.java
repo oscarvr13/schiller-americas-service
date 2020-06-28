@@ -96,7 +96,7 @@ public class PersonServiceTest {
    */
   @Test
   public void testCreatePerson() {
-    PersonDto personToSave = new PersonDto("Fernando", 24, "M");
+    PersonDto personToSave = new PersonDto("Fernando", 24);
     Person person = Person.getBuilder().withId(null).withName("Fernando")
         .withAge(24).withGender("M").withCode(personToSave.getCode())
         .withCreatedAt(personToSave.getCreateDate()).build();
@@ -120,7 +120,7 @@ public class PersonServiceTest {
    */
   @Test
   public void testUpdatePerson() {
-    PersonDto personDtoUpdate = new PersonDto("Fernando", 24, "M");
+    PersonDto personDtoUpdate = new PersonDto("Fernando", 24);
     Person personToUpdate = Person.getBuilder().withId(1).withName("Fernando")
         .withAge(24).withGender("M").withCode(personDtoUpdate.getCode())
         .withCreatedAt(personDtoUpdate.getCreateDate()).build();

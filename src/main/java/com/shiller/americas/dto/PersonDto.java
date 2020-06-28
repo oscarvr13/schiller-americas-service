@@ -3,15 +3,23 @@ package com.shiller.americas.dto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Random;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.fasterxml.jackson.annotation.*;
 import com.shiller.americas.entity.Person;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+@ToString
 @EqualsAndHashCode
 @ApiModel(value = "Person Model", description = "Values of each person")
-//@JsonIgnoreProperties(ignoreUnknown = true)
 public class PersonDto {
 
   /**
@@ -26,6 +34,7 @@ public class PersonDto {
    */
   @ApiModelProperty(value = "Indicates the person name",
       example = "Oscar", required = true)
+  @NotEmpty(message = "Person name must have a value  not empty")
   private String name;
 
   /**
@@ -33,6 +42,9 @@ public class PersonDto {
    */
   @ApiModelProperty(value = "Indicates the person age",
       example = "23", required = true)
+  @NotNull(message = "Person age must have a value  not empty")
+  @Min(value = 10, message = "Age should not be less than 10")
+  @Max(value = 100, message = "Age should not be greater than 100")
   private Integer age;
 
   /**
@@ -55,9 +67,9 @@ public class PersonDto {
   @ApiModelProperty(value = "Indicates the person create date",
       example = "2020-06-30", required = false, hidden = true)
   private Date createDate;
-  
-  public PersonDto() {
-    
+
+  private PersonDto() {
+    System.out.println("Defaul constructor");
   }
 
   /**
@@ -66,13 +78,19 @@ public class PersonDto {
    * @param name Name of the person
    * @param age Age of the person
    */
-  public PersonDto(String name, Integer age) {
+
+  public PersonDto(
+          String name,
+         Integer age) {
+    System.out.println("Two params constructor");
     this.name = name;
     this.age = age;
     this.gender = "";
     this.code = generateString();
     createDate = new Date();
   }
+
+
   
 
   /**
@@ -83,12 +101,15 @@ public class PersonDto {
    * @param gender Gender of the person.
    */
   public PersonDto(String name, Integer age, String gender) {
+    System.out.println("Three params const");
     this.name = name;
     this.age = age;
-    this.gender = gender;
+    this.gender = gender != null ? gender :  "";
     this.code = generateString();
     this.createDate = new Date();
   }
+
+
    
 
   /**
@@ -139,8 +160,8 @@ public class PersonDto {
     this.personId = personId;
   }
 
-
   private void setName(String name) {
+    System.out.println("Set name");
     this.name = name;
   }
 
@@ -149,13 +170,15 @@ public class PersonDto {
     this.age = age;
   }
 
-
+  @JsonSetter
   private void setGender(String gender) {
+    System.out.println("Set the gender  to deserialize");
     this.gender = gender;
   }
 
-
+  //@JsonIgnore
   private void setCode(String code) {
+    System.out.println("Set code: "+code);
     this.code = code;
   }
 

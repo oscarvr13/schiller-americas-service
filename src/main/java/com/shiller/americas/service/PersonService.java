@@ -2,15 +2,20 @@ package com.shiller.americas.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.shiller.americas.controller.client.CourseClient;
+import com.shiller.americas.controller.client.CourseService;
+import com.shiller.americas.dto.CourseDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import com.shiller.americas.dto.PersonDto;
 import com.shiller.americas.entity.Person;
 import com.shiller.americas.repository.PersonRepository;
-import lombok.RequiredArgsConstructor;
 import com.google.common.collect.Lists;
-
 
 @RequiredArgsConstructor
 @Service
@@ -18,10 +23,7 @@ public class PersonService {
 
   private final PersonRepository personRepository;
 
-  public PersonService(PersonRepository personRepository) {
-    this.personRepository = personRepository;
-  }
-
+  private final CourseService courseService;
 
   public List<PersonDto> getAllPersons() {
     return Lists.newArrayList(personRepository.findAll()).stream()
@@ -40,6 +42,7 @@ public class PersonService {
   }
 
   public PersonDto updatePerson(int personId, PersonDto personToUpdate) {
+    System.out.println("PersonDtoToUpdate: "+personToUpdate);
     return personRepository.findById(personId).map(person -> 
     {
       Person newPersonToSave =
@@ -61,6 +64,8 @@ public class PersonService {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found Person by Id");
     }
   }
-  
-  
+
+  public ResponseEntity<List<CourseDto>> getAllCourses() {
+    return courseService.getAllCourses();
+  }
 }
