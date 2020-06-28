@@ -30,7 +30,7 @@ public class PersonControllerTests {
     List<PersonDto> persons = Arrays.asList(response.getBody());
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(persons).hasSize(3).extracting("personId").containsExactly(1, 2, 3);
-    assertThat(persons).extracting("name").containsExactly("Juan", "Maria", "Luisa");
+    assertThat(persons).extracting("name").containsExactly("Juan", "Maria", "Luis");
   }
 
   @Test
