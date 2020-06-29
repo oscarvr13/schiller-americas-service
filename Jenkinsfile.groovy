@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                echo 'Building Sample Maven Project'git
+                echo 'Building Sample Maven Project'
             }
         }
         stage('Deploy') {
