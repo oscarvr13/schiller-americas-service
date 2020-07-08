@@ -4,7 +4,7 @@ pipeline {
         stage('Init') {
             steps {
                 echo 'Hi, this is Anshul from LevelUp360'
-                echo 'We are Starting the Testing'
+                echo 'We are Starting the Testing  just one test'
             }
         }
         stage('Test') {
