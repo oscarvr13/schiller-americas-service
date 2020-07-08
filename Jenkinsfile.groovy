@@ -7,9 +7,9 @@ pipeline {
                 echo 'We are Starting the Testing'
             }
         }
-        stage('Build') {
+        stage('Test') {
             steps {
-                echo 'Building Sample Maven Project'
+                sh 'mvn clean verify'
             }
         }
         stage('Deploy') {
